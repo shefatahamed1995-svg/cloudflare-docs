@@ -97,7 +97,7 @@ async function run(): Promise<void> {
 				const filePathToUriPath = (link: string): string => {
 					let path = link
 						.replace(/^src\/content\/docs/, "")
-						.replace(/^src\/content\/changelogs-next/, "")
+						.replace(/^src\/content\/changelogs-next/, "/changelogs-next")
 						.replace(/index\.mdx$/, "")
 						.replace(/\.mdx$/, "/");
 					return slugify(path);
