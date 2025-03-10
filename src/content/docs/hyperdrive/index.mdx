@@ -1,5 +1,5 @@
 ---
-title: Overview
+title: Cloudflare Hyperdrive
 order: 0
 type: overview
 pcx_content_type: overview
@@ -19,7 +19,7 @@ import {
 	RelatedProduct,
 	Tabs,
 	TabItem,
-	LinkButton
+	LinkButton,
 } from "~/components";
 
 <Description>
@@ -61,8 +61,10 @@ export default {
     		return Response.json({ error: e instanceof Error ? e.message : e }, { status: 500 });
     	}
     },
+
 } satisfies ExportedHandler<{ HYPERDRIVE: Hyperdrive }>;
-```
+
+````
 
     </TabItem>
     <TabItem label="wrangler.jsonc">
@@ -86,7 +88,7 @@ export default {
 			}
 		]
 	}
-```
+````
 
 </TabItem>
 </Tabs>
