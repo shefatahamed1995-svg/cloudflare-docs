@@ -14,6 +14,8 @@ You can use D1 read replication by using D1 Sessions API. A Session encapsulates
 
 By using Sessions API for read replication, all of your queries from a single Session read from a version of the database which is as up-to-date as your query. This ensures that the version of the database you are reading is logically consistent with your queries when using read replicas.
 
+The following Worker code uses D1 Sessions API to use read replicas, and allows you to test the decrease in query latency when using read replication.
+
 ```js collapse={8-15, 24-31}
 export default {
 	async fetch(request, env) {
