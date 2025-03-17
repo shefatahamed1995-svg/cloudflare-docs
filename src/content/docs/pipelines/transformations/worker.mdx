@@ -166,8 +166,65 @@ By following this tutorial, you've created a Pipeline with a Worker transformati
 ## Batch settings
 Transformations run on batches of records. Batching is useful to reduce the number of times your Worker is invoked, thus reducing costs. To specify batch settings for your Pipeline, refer to the [batching](/pipelines/configuration/batching) documentation.
 
-## Using `.env` and `.ctx`
-Coming soon!
+## Bindings (`env`)
+You can use [bindings](/workers/runtime-apis/bindings) from inside your transformation worker. Bindings allow your transformation Worker to interact with resources, such as [D1](/d1/), [KV](/kv/) or environment variables. The `env` object is exposed as a class property of the `PipelineTransformationEntrypoint`.
+
+For example, you can declare a binding to the environment variable GREETING:
+<WranglerConfig>
+
+```toml
+name = "my-transformation-worker"
+
+[vars]
+GREETING = "Hello"
+```
+
+</WranglerConfig>
+
+You can access it by calling `this.env.GREETING`:
+
+```js
+import { PipelineTransformationEntrypoint } from 'cloudflare:pipeline-transform'
+
+export class MyTransform extends PipelineTransformationEntrypoint {
+	async run(
+	records,
+	metadata
+	) {
+			return records.map((record) => {
+				const mutated = record;
+				mutated.greeting = this.env.GREETING
+			})
+  }
+}
+```
+
+You can use any type of [binding](/workers/runtime-apis/bindings) this way.
+
+## Lifecycle methods (`ctx`)
+The [`ctx`](/workers/runtime-apis/context) object is exposed as a class property of the `WorkerEntrypoint` class.
+
+For example, you can extend the lifetime of the invocation context by calling the `waitUntil()` method:
+
+```js
+import { PipelineTransformationEntrypoint } from 'cloudflare:pipeline-transform'
+
+export class MyTransform extends PipelineTransformationEntrypoint {
+	async run(
+	records,
+	metadata,
+	) {
+			return records.map((record) => {
+				const mutated = record;
+				this.ctx.waitUntil(this.doSomething())
+			})
+  }
+
+	async doSomething() {
+		// ...
+	}
+}
+```
 
 ## Error handling
 Coming soon!

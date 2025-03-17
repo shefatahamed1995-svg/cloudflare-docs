@@ -5,7 +5,7 @@ sidebar:
   order: 10
 ---
 
-Pipelines automatically batches ingested records. Batching helps reduce the number of output files written to your destination, which can make them more efficient to query. Batching can also reduce the number of times your [transformation worker](pipelines/transformations/worker) is invoked, which can reduce costs.
+Pipelines automatically batches ingested records. Batching helps reduce the number of output files written to your destination, which can make them more efficient to query. Batching can also reduce the number of times your [transformation worker](/pipelines/transformations/worker) is invoked, which can reduce costs.
 
 Batch settings apply after the ingestion stage of a Pipeline. As soon as a batch is filled, the batch of data will be delivered downstream to any transformations you've configured, and then finally to your configured destination.
 
