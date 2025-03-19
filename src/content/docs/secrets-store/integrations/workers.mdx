@@ -14,11 +14,11 @@ This is different from Workers [Variables and Secrets](/workers/configuration/se
 
 ## Before you begin
 
-If using the Dashboard, make sure you already have a Workers application. Refer to [Get started](/workers/get-started/dashboard/) for guidance.
+If [using the Dashboard](#option-b-use-the-dashboard), make sure you already have a Workers application. Refer to [Get started](/workers/get-started/dashboard/) for guidance.
 
-### Set up account secrets in Secrets Store
+## 1. Set up account secrets in Secrets Store
 
-If there are no account secrets yet, follow the steps below. You must have a (TBC)[Super Administrator or a Secrets Store Admin role](/secrets-store/access-control/) within your Cloudflare account.
+If there are no account secrets yet, follow the steps below. You must have a (TBC) [Super Administrator or a Secrets Store Admin role](/secrets-store/access-control/) within your Cloudflare account.
 
 1. Log in to the [Cloudflare dashboard](https://dash.cloudflare.com/) and select your account.
 2. Go to **Secrets Store** and select **Create secret**.
@@ -31,8 +31,22 @@ Once the secret is saved, the secret value will no longer be available for viewi
 
 Refer to [manage account secrets](/secrets-store/manage-secrets/) for further options.
 
-## Bind an account secret to your worker
+## 2. Bind an account secret to your worker
+
+(TBC) You must have one of the following [roles within your Cloudflare account](/secrets-store/access-control/):
+- Super Administrator
+- Secrets Store Admin
+- Secrets Store Deploy
 
 ### Option A: use the CLI
 
 ### Option B: use the Dashboard
+
+1. Log in to the [Cloudflare dashboard](https://dash.cloudflare.com/) and select your account.
+2. Go to **Workers & Pages** and select the Workers application where you want ro use account secrets.
+3. Got to **Settings** > **Bindings** and select **Add**.
+4. On the **Add a resource binding** side panel, choose **Secrets Store**.
+5. Select the **Secret name** from the list of available account secrets (created in [step 1](#1-set-up-account-secrets-in-secrets-store)).
+6. Select **Deploy** to confirm.
+
+## 3. Access the secret on the `env` object
