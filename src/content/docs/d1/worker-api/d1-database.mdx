@@ -254,15 +254,19 @@ const session = env.DB.withSession("<parameter>");
 #### Parameters
 
 - <code>first-primary</code>: <Type text="String"/><MetaInfo text="Optional"/>
-    - Directs the first query in the Session (whether read or write) to the primary database instance. Use this option if you need to start the Session with the most up-to-date data from the primary database instance.
+  - Directs the first query in the Session (whether read or write) to the primary database instance. Use this option if you need to start the Session with the most up-to-date data from the primary database instance.
+  - Subsequent queries in the Session may use read replicas.
+  - Subsequent queries in the Session have sequential consistency.
 
 - <code>first-unconstrained</code>: <Type text="String"/><MetaInfo text="Optional"/>
-    - Directs the first query in the Session (whether read or write) to any database instance. Use this option if you do not need to start the Session with the most up-to-date data, and wish to prioritize minimizing query latency from the very start of the Session.
+  - Directs the first query in the Session (whether read or write) to any database instance. Use this option if you do not need to start the Session with the most up-to-date data, and wish to prioritize minimizing query latency from the very start of the Session.
+  - Subsequent queries in the Session have sequential consistency.
+  - This is the default behavior when no parameters are provided.
 
 - <code>bookmark</code>: <Type text="String"/><MetaInfo text="Optional"/>
   - A [`bookmark`](/d1/reference/time-travel/#bookmarks) from an existing D1 Session. This allows you to continue the existing Session using the `bookmark` as a reference point.
-
-- If no parameters are provided, `withSession` defaults to using the `first-unconstrained` parameter.
+  - Subsequent queries in the Session have sequential consistency.
+  - You can return the last encountered `bookmark` for a given Session using [`session.getBookmark()`](/d1/worker-api/d1-database/#getbookmark).
 
 #### Return values
 

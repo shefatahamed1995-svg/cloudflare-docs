@@ -56,35 +56,45 @@ D1 read replication achieves this by attaching a <GlossaryTooltip term="bookmark
 
 Use REST API to enable read replication on your D1 database.
 
-```curl
-fetch -X PUT "https://api.cloudflare.com/client/v4/accounts/<accountid>/d1/database/<databaseId>" \
-     -H "Authorization: Bearer $TOKEN" \
-     -H "Content-Type:application/json" --data '{ "read_replication": { "mode": "auto" } }'
+```ts
+const headers = new Headers({
+  "Authorization": `Bearer ${TOKEN}`
+});
+
+await fetch ("/v4/accounts/{account_id}/d1/database/{database_id}", {
+	method: "PUT",
+	headers: headers,
+	body: JSON.stringify(
+		{ "read_replication": { "mode": "auto" } }
+	)
+ }
+)
 ```
 
 If this is your first time using REST API, create an API token. Refer to [Create API token](/fundamentals/api/get-started/create-token/).
 
 ### Start a D1 Session without constraints
 
-To start a new D1 Session without any constraints, pass the parameter `first-unconstrained` to `.withSession()`. This is also the default behavior when no parameters are specified.
+You can start a new D1 Session without constraints. D1 will route the first read query in the Session to any database instance, which could be either the primary database instance or a read replica.
+
+Use this option if you do not need to read the latest version of the database in the primary database instance.
+
+To do this, do not pass any parameters to `withSession()`.
 
 ```ts
 // synchronous
-let session = env.DB_D1.withSession('first-unconstrained')
-const stmt = session.prepare(`SELECT * FROM Customers WHERE CompanyName = 'Bs Beverages'`)
+let session = env.DB_D1.withSession()
+const stmt = session
+.prepare(`SELECT * FROM Customers WHERE CompanyName = 'Bs Beverages'`)
 // wait for Session condition, queries within batch have casual consistency
 const result = await session.run()
 ```
 
-`.withSession('first-unconstrained')` directs the first query in the Session (whether read or write) to any database instance. This could be either the primary database instance or a read replica (note that write queries will be forwarded to the primary database instance). This means that:
+- D1 serves the first read query may immediately start using read replicas. This will be a version of the database that is as up-to-date as the query needs it to be.
+- Possible use-case: Displaying blog articles on a website. It is not crucial to display the latest blog article, and therefore the user can start the Session by reading from a read replica. Subsequent queries can also go to the read replica.
+- Refer to the [D1 Workers Binding API documentation](/d1/worker-api/d1-database#withsession).
 
-- The Session may immediately start using read replicas.
-- D1 serves the first read query with a version of the database that is as up-to-date as the query needs it to be.
-- Subsequent queries in the Session have sequential consistency.
-
-A possible use-case may be displaying blog articles on a website. It is not crucial to display the latest blog article, and therefore the user can start the Session by reading from a read replica. Subsequent queries can also go to the read replica.
-
-#### Example of using `first-unconstrained`
+#### Example of a D1 Session without constraints
 
 Suppose you want to develop a feature for displaying “likes” on a social network application.
 
@@ -97,30 +107,35 @@ async function getLikes(postId: string, db: D1Database, bookmark: string | null)
   // NOTE: Achieve sequential consistency with given bookmark,
   //       or start a new session that can be served by any replica.
   const session = db.withSession(bookmark ?? "first-unconstrained");
-  const { results } = session.prepare("SELECT * FROM likes WHERE postId = ?").bind(postId).run();
+  const { results } = session
+	.prepare("SELECT * FROM likes WHERE postId = ?")
+	.bind(postId)
+	.run();
   return { bookmark: session.getBookmark(), likes: results };
 }
 ```
 
 ### Start a D1 Session with a constraint
 
-To start a new D1 Session with the first query reading from the primary database instance, pass the parameter `first-primary` to `.withSession()`.
+You can start a new D1 Session by forcing the first read query to go to the primary database instance. Subsequent read queries may read from the read replica.
+
+Use this option if you need to first read from the latest version of the database in the primary database instance.
+
+To do this, pass the parameter `first-primary` to `withSession()`.
 
 ```ts
 // synchronous
-let sess = env.DB_D1.withSession('first-primary')
-const stmt = sess.prepare(`SELECT * FROM Customers WHERE CompanyName = 'Bs Beverages'`)
+let session = env.DB_D1.withSession('first-primary')
+const stmt = session
+.prepare(`SELECT * FROM Customers WHERE CompanyName = 'Bs Beverages'`)
 // wait for Session condition, queries within batch have casual consistency
-const result = await sess.run()
+const result = await session.run()
 ```
-
-`.withSession('first-primary')` directs the first query in the Session (whether read or write) to the primary database instance. This means that:
 
 - D1 serves the first read query of the Session with the latest version of the database, which is the primary database instance.
 - Subsequent queries in the Session may use read replicas.
-- Subsequent queries in the Session have sequential consistency.
-
-A possible use-case may be reading the score-table of an ongoing sports tournament. It is important for the first read to read the latest data from the primary database instance, but may not need to display subsequent score updates immediately (and therefore suitable to use read replicas for subsequent queries within the same Session).
+- Possible use-case: Reading the score-table of an ongoing sports tournament. It is important for the first read to read the latest data from the primary database instance, but may not need to display subsequent score updates immediately (and therefore suitable to use read replicas for subsequent queries within the same Session).
+- Refer to the [D1 Workers Binding API documentation](/d1/worker-api/d1-database#withsession).
 
 #### Example of using `first-primary`
 
@@ -133,38 +148,58 @@ Then, when opening an individual electricity bill statement, we can continue usi
 ```ts
 async function listBillStatements(accountId: string, db: D1Database): ListBillStatementsResult {
   const session = db.withSession("first-primary");
-  const { results } = session.prepare("SELECT * FROM bills WHERE accountId = ?").bind(accountId).run();
+  const { results } = session
+	.prepare("SELECT * FROM bills WHERE accountId = ?")
+	.bind(accountId)
+	.run();
   return { bookmark: session.getBookmark(), bills: results };
 }
 
 async function getBillStatement(accountId: string, billId: string, bookmark: string): GetBillStatementResult {
   // NOTE: We achieve sequential consistency with the given `bookmark`.
   const session = db.withSession(bookmark);
-  const { results } = session.prepare("SELECT * FROM bills WHERE accountId = ? AND billId = ? LIMIT 1").bind(accountId, billId).first();
+  const { results } = session
+	.prepare("SELECT * FROM bills WHERE accountId = ? AND billId = ? LIMIT 1")
+	.bind(accountId, billId)
+	.first();
   return { bookmark: session.getBookmark(), bill: results };
 }
 ```
 
 ### Continue a D1 Session with a bookmark
 
-When continuing an existing Session started with `withSession`, you can provide a `bookmark` parameter from an existing Session.
+You can continue an existing Session from a previous Session.
+
+Use this option if you need to read from the specific version of the database which you last read from your previous Session.
+
+To do this, pass the `bookmark` string to `withSession()`.
 
 ```ts
 // synchronous
-let session = env.DB_D1.withSession('00000004-00000002-00004ec6-242180193730387d6b7156959e056db7')
-const stmt = session.prepare(`SELECT * FROM Customers WHERE CompanyName = 'Bs Beverages'`)
+let session = env.DB_D1.withSession('bookmark_string')
+const stmt = session
+.prepare(`SELECT * FROM Customers WHERE CompanyName = 'Bs Beverages'`)
 // wait for Session condition, queries within batch have casual consistency
 const result = await session.run()
 ```
 
-Starting a Session with a `bookmark` continues an existing Session using the `bookmark` as the reference point. This ensures you read from a version of the database which is at least as up-to-date as the provided `bookmark`.
+- Starting a Session with a `bookmark` continues an existing Session using the `bookmark` as the reference point. This ensures you read from a version of the database which is at least as up-to-date as the provided `bookmark`.
+- Possible use-case: Reading the score-table of an ongoing sports tournament (a continuation of the example from [Start a D1 Session with a constraint](/d1/features/read-replication/#start-a-d1-session-with-a-constraint)). A user may have started a web browser session and already has a `bookmark`. D1 can serve subsequent read queries within the same Session which is logically consistent, by using the `bookmark`.
+- Refer to the [D1 Workers Binding API documentation](/d1/worker-api/d1-database#withsession).
 
-  - Subsequent queries in the Session have sequential consistency.
-  - You can return the last encountered `bookmark` for a given Session using `session.getBookmark()`.
+#### Example of using `bookmark`
 
-A potential use-case may be reading the score-table of an ongoing sports tournament (a continuation of the example from [Start a D1 Session with a constraint](/d1/features/read-replication/#start-a-d1-session-with-a-constraint)). A user may have started a web browser session and already has a `bookmark`. D1 can serve subsequent read queries within the same Session which is logically consistent, by using the `bookmark`.
 
-For more information on Sessions API, refer to the [D1 Workers Binding API documentation](/d1/worker-api/d1-database#withsession).
+
+```ts
+//TBC
+```
+
+### Check if read replication is enabled
+
+### Disable read replication
+
+
 
 ## Read replica locations
 
