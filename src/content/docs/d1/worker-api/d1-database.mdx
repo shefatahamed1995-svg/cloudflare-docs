@@ -245,7 +245,7 @@ return new Response(dump, {
 
 ### `withSession`
 
-Starts a D1 Session which activates read replication.
+Starts a D1 Session which maintains sequential consistency among queries executed on the returned session object.
 
 ```ts
 const session = env.DB.withSession("<parameter>");
@@ -266,18 +266,21 @@ const session = env.DB.withSession("<parameter>");
 - <code>bookmark</code>: <Type text="String"/><MetaInfo text="Optional"/>
   - A [`bookmark`](/d1/reference/time-travel/#bookmarks) from an existing D1 Session. This allows you to continue the existing Session using the `bookmark` as a reference point.
   - Subsequent queries in the Session have sequential consistency.
-  - You can return the last encountered `bookmark` for a given Session using [`session.getBookmark()`](/d1/worker-api/d1-database/#getbookmark).
 
 #### Return values
 
 - <code>D1DatabaseSession</code>: <Type text="Object"/>
-  - An object which contains the methods [`prepare()`](/d1/worker-api/d1-database#prepare) and [`getBookmark`](/d1/worker-api/d1-database#getbookmark).
+  - An object which contains the methods [`prepare()`](/d1/worker-api/d1-database#prepare) and [`batch()`](/d1/worker-api/d1-database#batch) similar to `D1Database`, along with the additional [`getBookmark`](/d1/worker-api/d1-database#getbookmark) method.
+
+#### Guidance
+
+You can return the last encountered `bookmark` for a given Session using [`session.getBookmark()`](/d1/worker-api/d1-database/#getbookmark).
 
 ## Session methods
 
 ### `getBookmark`
 
-Retrieves the `bookmark` from the D1 Session.
+Retrieves the latest `bookmark` from the D1 Session.
 
 ```ts
 const session = db.withSession("first-primary");
@@ -291,4 +294,4 @@ return { bookmark } = session.getBookmark();
 #### Return values
 
 - <code>bookmark</code>: <Type text="String | null"/>
-  - A [`bookmark`](/d1/reference/time-travel/#bookmarks) which identifies the latest version of the database seen by the write query.
+  - A [`bookmark`](/d1/reference/time-travel/#bookmarks) which identifies the latest version of the database seen by all queries executed within the Session.

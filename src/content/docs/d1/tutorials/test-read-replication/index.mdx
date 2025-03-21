@@ -115,7 +115,20 @@ export default {
   };
 ```
 
-## 6. Deploy Worker
+## 6. Enable read replication
+
+Use the REST API to enable read replication on your D1 database.
+
+Run the following `curl` command on your terminal, with the details of your account ID and database ID.
+
+```curl
+curl -X PUT "https://api.cloudflare.com/client/v4/accounts/{account_id}/d1/database/{database_id}" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"read_replication": {"mode": "auto"}}'
+```
+
+## 7. Deploy Worker
 
 Deploy your Worker.
 
@@ -123,23 +136,26 @@ Deploy your Worker.
 npx wrangler deploy
 ```
 
-## 7. Compare query latency
+## 8. Compare query latency
 
 Once deployed, you can compare the query latency when using read replication.
 
 - Use the `/run` URL to send a read query without read replication.
 - Use the `/withsession` URL to send a read query with read replication.
 
-For both queries, the Worker script returns the `meta` object, which contains `served-by-primary` boolean field. This field indicates whether your request was served by the primary database instance.
+For both queries, the Worker script returns the `meta` object, which contains:
 
-The `d1Duration` variable shows the query latency.
+- `served_by_primary`: indicates whether the query was served by the primary database instance
+- `served_by_region`: shows the location of the database instance that processed the query
+
+The `d1Duration` variable shows the whole round-trip latency.
 
 ## Summary
 
 By completing this tutorial, you have:
 
 1. Created a D1 database using a location hint.
-2. Created a Worker script which uses D1 Sessions to use read replication.
+2. Created a Worker script which uses read replication.
 3. Deployed the Worker to test the difference in query latency when using read replication.
 
 ## Related resources
