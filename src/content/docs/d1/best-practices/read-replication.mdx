@@ -12,26 +12,11 @@ D1 read replication can lower latency for read queries and scale read throughput
 
 Your application can use read replicas with D1 [Sessions API](/d1/worker-api/d1-database/#withsession). A Session encapsulates all the queries from one logical session for your application. For example, a Session may correspond to all queries coming from a particular web browser session. All queries within a Session read from a database instance which is as up-to-date as your query needs it to be. Sessions API ensures [sequential consistency](/d1/best-practices/read-replication/#replica-lag-and-consistency-model) for all queries in a Session.
 
-To checkout D1 read replication and Sessions API:
+To checkout D1 read replication:
 
-1. Deploy the following Worker code, which will prompt you to create a D1 database.
+Deploy the following Worker code using Sessions API, which will prompt you to create a D1 database and enable read replication on said database.
 
-   [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/lambrospetrou/d1-starter-sessions-api)
-
-2. Enable read replication on the just created D1 database.
-
-```curl
-curl -X PUT "https://api.cloudflare.com/client/v4/accounts/{account_id}/d1/database/{database_id}" \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"read_replication": {"mode": "auto"}}'
-```
-
-:::note
-To use REST API, you need to have an API token with `D1:Edit` permission.
-
-If you do not have an API token, follow the guide: [Create API token](/fundamentals/api/get-started/create-token/).
-:::
+   [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/templates/tree/staging/d1-starter-sessions-api)
 
 ```ts collapse={1-6, 34-130}
 import { D1Database, D1DatabaseSession } from "@cloudflare/workers-types";
@@ -189,116 +174,25 @@ All write queries are still forwarded to the primary database instance. Read rep
 | Primary database instance | The database instance containing the “original” copy of the database                                                                              | Can serve write queries                                     | Can serve read queries                                    |
 | Read replica database instance             | A database instance containing a copy of the original database which asynchronously receives updates from the primary database instance | Forwards any write queries to the primary database instance | Can serve read queries using its own copy of the database |
 
+## Benefits of read replication
+
+A system with multiple read replicas located around the world improves the performance of databases:
+
+- The read throughput increases by distributing load across multiple replicas. Since multiple database instances are able to serve read-only requests, your application can serve a larger number of queries at any given time.
+- The query latency decreases for users located close to the read replicas. By shortening the physical distance between a the database instance and the user, read query latency decreases, resulting in a faster application.
+
 ## Use Sessions API
 
 By using [Sessions API](/d1/worker-api/d1-database/#withsession) for read replication, all of your queries from a single <GlossaryTooltip term="session">Session</GlossaryTooltip> read from a version of the database which ensures sequential consistency. This ensures that the version of the database you are reading is logically consistent even if the queries are handled by different read replicas.
 
 D1 read replication achieves this by attaching a <GlossaryTooltip term="bookmark">bookmark</GlossaryTooltip> to each query within a Session. For more information, refer to [Bookmarks](/d1/reference/time-travel/#bookmarks).
 
-### Enable read replication
+### Enable read replicaton
 
-With the REST API, set `read_replication.mode: auto` to enable read replication on a D1 database.
+Read replication can be enabled at the database level in the Cloudflare dashboard. Check [**<D1 Database>** > **Settings**] to view if read replication is enabled.
 
-:::note
-To use REST API, you need to have an API token with `D1:Edit` permission.
-
-If you do not have an API token, follow the guide: [Create API token](/fundamentals/api/get-started/create-token/).
-:::
-
-<Tabs>
-<TabItem label="cURL">
-```curl
-curl -X PUT "https://api.cloudflare.com/client/v4/accounts/{account_id}/d1/database/{database_id}" \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"read_replication": {"mode": "auto"}}'
-```
-</TabItem><TabItem label="TypeScript">
-
-```ts
-const headers = new Headers({
-  "Authorization": `Bearer ${TOKEN}`
-});
-
-await fetch ("/v4/accounts/{account_id}/d1/database/{database_id}", {
-	method: "PUT",
-	headers: headers,
-	body: JSON.stringify(
-		{ "read_replication": { "mode": "auto" } }
-	)
- }
-)
-```
-</TabItem>
-</Tabs>
-
-### Disable read replication
-
-With the REST API, set `read_replication.mode: disabled` to disable read replication on a D1 database.
-Use an [API token](/fundamentals/api/get-started/create-token/) with `D1:Edit` [permission](/fundamentals/api/reference/permissions/#account-permissions).
-
-<Tabs>
-<TabItem label="cURL">
-```curl
-curl -X PUT "https://api.cloudflare.com/client/v4/accounts/{account_id}/d1/database/{database_id}" \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"read_replication": {"mode": "disabled"}}'
-```
-</TabItem><TabItem label="TypeScript">
-```ts
-const headers = new Headers({
-  "Authorization": `Bearer ${TOKEN}`
-});
-
-await fetch ("/v4/accounts/{account_id}/d1/database/{database_id}", {
-	method: "PUT",
-	headers: headers,
-	body: JSON.stringify(
-		{ "read_replication": { "mode": "disabled" } }
-	)
- }
-)
-```
-</TabItem>
-</Tabs>
-
-:::note
-Disabling read replication takes 24 hours for replicas to stop processing requests.
-:::
-
-### Check if read replication is enabled
-
-`GET` D1 database REST endpoint returns if read replication is enabled or disabled.
-Use an [API token](/fundamentals/api/get-started/create-token/) with `D1:Read` [permission](/fundamentals/api/reference/permissions/#account-permissions).
-
-<Tabs>
-<TabItem label="cURL">
-```curl
-curl -X GET "https://api.cloudflare.com/client/v4/accounts/{account_id}/d1/database/{database_id}" \
-  -H "Authorization: Bearer $TOKEN"
-```
-</TabItem>
-<TabItem label="TypeScript">
-```ts
-const headers = new Headers({
-  "Authorization": `Bearer ${TOKEN}`
-});
-
-const response = await fetch("/v4/accounts/{account_id}/d1/database/{database_id}", {
-  method: "GET",
-  headers: headers
-});
-
-const data = await response.json();
-console.log(data.read_replication.mode);
-```
-</TabItem>
-</Tabs>
-
-- Check the `read_replication` property of the `result` object
-	- `"mode": "auto"` indicates read replication is enabled
-	- `"mode": "disabled"` indicates read replication is disabled
+1. Go to [**Workers & Pages** > **D1**](https://dash.cloudflare.com/?to=/:account/workers/d1).
+2. Select an existing database > Settings > Enable Read Replication.
 
 ### Start a Session without constraints
 
@@ -509,6 +403,109 @@ console.log({
 
 - `served_by_region` and `served_by_primary` fields are present for all D1 remote requests, regardless of whether read replication is enabled or if the Sessions API is used. On local development, `npx wrangler dev`, these fields are `undefined`.
 
+### Enable read replication via REST API
+
+With the REST API, set `read_replication.mode: auto` to enable read replication on a D1 database.
+
+For this REST endpoint, you need to have an API token with `D1:Edit` permission. If you do not have an API token, follow the guide: [Create API token](/fundamentals/api/get-started/create-token/).
+
+<Tabs>
+<TabItem label="cURL">
+```curl
+curl -X PUT "https://api.cloudflare.com/client/v4/accounts/{account_id}/d1/database/{database_id}" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"read_replication": {"mode": "auto"}}'
+```
+</TabItem><TabItem label="TypeScript">
+
+```ts
+const headers = new Headers({
+  "Authorization": `Bearer ${TOKEN}`
+});
+
+await fetch ("/v4/accounts/{account_id}/d1/database/{database_id}", {
+	method: "PUT",
+	headers: headers,
+	body: JSON.stringify(
+		{ "read_replication": { "mode": "auto" } }
+	)
+ }
+)
+```
+</TabItem>
+</Tabs>
+
+### Disable read replication via REST API
+
+With the REST API, set `read_replication.mode: disabled` to disable read replication on a D1 database.
+
+For this REST endpoint, you need to have an API token with `D1:Edit` permission. If you do not have an API token, follow the guide: [Create API token](/fundamentals/api/get-started/create-token/).
+
+:::note
+Disabling read replication takes up to 24 hours for replicas to stop processing requests. Sessions API works with databases that do not have read replication enabled, so it’s safe to run code with Sessions API even after you disable replicas.
+:::
+
+<Tabs>
+<TabItem label="cURL">
+```curl
+curl -X PUT "https://api.cloudflare.com/client/v4/accounts/{account_id}/d1/database/{database_id}" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"read_replication": {"mode": "disabled"}}'
+```
+</TabItem><TabItem label="TypeScript">
+```ts
+const headers = new Headers({
+  "Authorization": `Bearer ${TOKEN}`
+});
+
+await fetch ("/v4/accounts/{account_id}/d1/database/{database_id}", {
+	method: "PUT",
+	headers: headers,
+	body: JSON.stringify(
+		{ "read_replication": { "mode": "disabled" } }
+	)
+ }
+)
+```
+</TabItem>
+</Tabs>
+
+### Check if read replication is enabled
+
+`GET` D1 database REST endpoint returns if read replication is enabled or disabled.
+
+For this REST endpoint, you need to have an API token with `D1:Read` permission. If you do not have an API token, follow the guide: [Create API token](/fundamentals/api/get-started/create-token/).
+
+<Tabs>
+<TabItem label="cURL">
+```curl
+curl -X GET "https://api.cloudflare.com/client/v4/accounts/{account_id}/d1/database/{database_id}" \
+  -H "Authorization: Bearer $TOKEN"
+```
+</TabItem>
+<TabItem label="TypeScript">
+```ts
+const headers = new Headers({
+  "Authorization": `Bearer ${TOKEN}`
+});
+
+const response = await fetch("/v4/accounts/{account_id}/d1/database/{database_id}", {
+  method: "GET",
+  headers: headers
+});
+
+const data = await response.json();
+console.log(data.read_replication.mode);
+```
+</TabItem>
+</Tabs>
+
+- Check the `read_replication` property of the `result` object
+	- `"mode": "auto"` indicates read replication is enabled
+	- `"mode": "disabled"` indicates read replication is disabled
+
 ## Read replica locations
 
 Currently, D1 automatically creates a read replica in [every supported region](/d1/configuration/data-location/#available-location-hints), including the region where the primary database instance is located. These regions are:
@@ -537,14 +534,14 @@ To see the impact of read replication and check the how D1 requests are processe
 
 There are some known limitations for D1 read replication.
 
-- TODO: smart placemet
-- TBC
+- Sessions API is only available via the [D1 Worker Binding](/d1/worker-api/d1-database/#withsession) and not yet available via the REST API.
+- TODO: smart placement
 
 ## Background information
 
 ### Replica lag and consistency model
 
-To account for replica lag, it is important to consider the consistency model for D1. A consistency model is a logical framework that governs how a database system serves user queries (how the data is updated and accessed) when there are multiple database instances. Different models can be useful in different use cases. Most database systems provide [read committed](https://jepsen.io/consistency/models/read-committed), [snapshot isolation](https://jepsen.io/consistency/models/snapshot-isolation), or [serializable](https://jepsen.io/consistency/models/serializable) consistency models, depending on their configuration.
+To account for <GlossaryTooltip term="replica lag"> replica lag </GlossaryTooltip>, it is important to consider the consistency model for D1. A consistency model is a logical framework that governs how a database system serves user queries (how the data is updated and accessed) when there are multiple database instances. Different models can be useful in different use cases. Most database systems provide [read committed](https://jepsen.io/consistency/models/read-committed), [snapshot isolation](https://jepsen.io/consistency/models/snapshot-isolation), or [serializable](https://jepsen.io/consistency/models/serializable) consistency models, depending on their configuration.
 
 #### Without Sessions API
 
@@ -582,13 +579,6 @@ Sequential consistency has properties such as:
 - **Writes follow reads**: If you read a value, then perform a write, the subsequent write must be based on the value that was just read.
 - **Read my own writes**: If you write to the database, all subsequent reads will see the write.
 
-### Benefits of read replication
-
-A system with multiple read replicas located around the world improves the performance of databases:
-
-- The read throughput increases by distributing load across multiple replicas. Since multiple database instances are able to serve read-only requests, your application can serve a larger number of queries at any given time.
-- The query latency decreases for users located close to the read replicas. By shortening the physical distance between a the database instance and the user, read query latency decreases, resulting in a faster application.
-
 ## Supplementary information
 
 You may wish to refer to the following resources:
@@ -596,5 +586,5 @@ You may wish to refer to the following resources:
 - Blog: [Beta announcement & technical deep dive](https://blog.cloudflare.com/d1-read-replication-beta/)
 - Blog: [Building D1: a Global Database](https://blog.cloudflare.com/building-d1-a-global-database/)
 - [D1 Sessions API documentation](/d1/worker-api/d1-database#withsession)
-- [Demo application]
+- [D1 Sessions API starter demo](https://github.com/cloudflare/templates/tree/staging/d1-starter-sessions-api)
 - [E-commerce store read replication demo](/d1/demos/#demos)
