@@ -12,17 +12,17 @@ Durable Objects are a special kind of Worker, so [Workers Limits](/workers/platf
 
 ## SQLite-backed Durable Objects general limits
 
-| Feature                                  | Limit |
-| ---------------------------------------- | ----------------------------------------------------------- |
-| Number of Objects                        | Unlimited (within an account or of a given class)           |
-| Maximum Durable Object classes           | 500 (Workers Paid) / 100 (Free) [^1]                        |
-| Storage per account                      | Unlimited (Workers Paid) / 5GB (Free) [^2]                  |
-| Storage per class                        | Unlimited [^3]                                              |
-| Storage per Durable Object               | 10 GB [^3]                                                  |
-| Key size                                 | Key and value combined cannot exceed 2 MB                   |
-| Value size                               | Key and value combined cannot exceed 2 MB                   |
-| WebSocket message size                   | 1 MiB (only for received messages)                          |
-| CPU per request                          | 30 seconds (default) / configurable to 5 minutes of [active CPU time](/workers/platform/limits/#cpu-time) [^4] |
+| Feature                                  | Limit                                                                                                                 |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Number of Objects                        | Unlimited (within an account or of a given class)                                                                     |
+| Maximum Durable Object classes           | 500 (Workers Paid) / 100 (Free) <sup>1</sup>                                                                          |
+| Storage per account                      | Unlimited (Workers Paid) / 5GB (Free) <sup>2</sup>                                                                    |
+| Storage per class                        | Unlimited <sup>3</sup>                                                                                                |
+| Storage per Durable Object               | 10 GB <sup>3</sup>                                                                                                    |
+| Key size                                 | Key and value combined cannot exceed 2 MB                                                                             |
+| Value size                               | Key and value combined cannot exceed 2 MB                                                                             |
+| WebSocket message size                   | 1 MiB (only for received messages)                                                                                    |
+| CPU per request                          | 30 seconds (default) / configurable to 5 minutes of [active CPU time](/workers/platform/limits/#cpu-time) <sup>4</sup>|
 
 <Details header="Footnotes" open={true}>
 1: Identical to the Workers [script limit](/workers/platform/limits/)
@@ -55,14 +55,14 @@ For Durable Object classes with [SQLite storage](/durable-objects/api/storage-ap
 | Feature                                  | Limit for class with key-value storage backend                   |
 | ---------------------------------------- | ---------------------------------------------------------------- |
 | Number of Objects                        | Unlimited (within an account or of a given class)                |
-| Maximum Durable Object classes           | 500 (Workers Paid) / 100 (Free) [^1]                             |
-| Storage per account                      | 50 GB (can be raised by contacting Cloudflare) [^2]              |
+| Maximum Durable Object classes           | 500 (Workers Paid) / 100 (Free) <sup>1</sup>                     |
+| Storage per account                      | 50 GB (can be raised by contacting Cloudflare) <sup>2</sup>      |
 | Storage per class                        | Unlimited                                                        |
 | Storage per Durable Object               | Unlimited                                                        |
 | Key size                                 | 2 KiB (2048 bytes)                                               |
 | Value size                               | 128 KiB (131072 bytes)                                           |
 | WebSocket message size                   | 1 MiB (only for received messages)                               |
-| CPU per request                          | 30s (including WebSocket messages) [^3]                          |
+| CPU per request                          | 30s (including WebSocket messages) <sup>3</sup>                  |
 
 <Details header="Footnotes">
 1: Identical to the Workers [script limit](/workers/platform/limits/)
