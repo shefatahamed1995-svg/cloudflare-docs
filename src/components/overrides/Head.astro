@@ -12,6 +12,7 @@ const NOINDEX_PRODUCTS = ["email-security", "style-guide", "security"];
 const currentSection = Astro.url.pathname.split("/")[1].replaceAll(".", "");
 
 const entry = Astro.locals.starlightRoute.entry;
+const lastUpdated = Astro.locals.starlightRoute.lastUpdated
 const frontmatter = entry.data;
 const head = frontmatter.head;
 
@@ -61,6 +62,18 @@ if (currentSection) {
 					name,
 					content: product.data.product.title,
 				});
+			});
+		}
+
+		if (lastUpdated) {
+			const daysBetweenUpdate = differenceInCalendarDays(new Date(), lastUpdated);
+			head.push({
+				tag: "meta",
+				attrs: {
+					name: "pcx_last_modified",
+					content: daysBetweenUpdate.toString(),
+				},
+				content: "",
 			});
 		}
 
