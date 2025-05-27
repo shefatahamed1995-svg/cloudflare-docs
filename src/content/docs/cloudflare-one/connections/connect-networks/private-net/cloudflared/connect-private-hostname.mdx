@@ -150,7 +150,7 @@ If your private hostname points to an HTTPS application on port 443, you can sec
 
 		| Selector       | Operator      | Value            | Logic | Action |
 		| -------------- | ------------- | ---------------- | ----- | ------ |
-		| SNI            | is            | `wiki.internal.com` | And   | Allow  |
+		| SNI            | is            | `wiki.internal.local` | And   | Allow  |
 		| User Email     | matches regex | `.*@example.com` |       |        |
 
 		2. Catch-all block policy
@@ -164,7 +164,7 @@ If your private hostname points to an HTTPS application on port 443, you can sec
 
 		| Selector       | Operator      | Value            | Logic | Action |
 		| -------------- | ------------- | ---------------- | ----- | ------ |
-		| Host           | is            | `wiki.internal.com` | And   | Allow  |
+		| Host           | is            | `wiki.internal.local` | And   | Allow  |
 		| User Email     | matches regex | `.*@example.com` |       |        |
 			</Details>
 
@@ -195,7 +195,7 @@ Access policies and Gateway network policies only support hostname-based filteri
 
 		| Selector       | Operator      | Value            | Logic | Action |
 		| -------------- | ------------- | ---------------- | ----- | ------ |
-		| Host           | is            | `wiki.internal.com` | And   | Allow  |
+		| Host           | is            | `wiki.internal.local` | And   | Allow  |
 		| User Email     | matches regex | `.*@example.com` |       |        |
 		</Details>
 
