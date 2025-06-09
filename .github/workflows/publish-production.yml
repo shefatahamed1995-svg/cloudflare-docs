@@ -4,6 +4,7 @@ on:
     branches:
       - production
       - main
+      - release
 
 jobs:
   publish:
