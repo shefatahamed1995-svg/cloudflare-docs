@@ -94,7 +94,7 @@ curl -X PUT \
     "keep_bindings": ["kv_namespace", "d1", "ai"]
   }'
 ```
-Once the API request is made, the Worker will be redeployed with the new bindings. The bindings will then become accessable from the Worker code using `env.BINDING_NAME` (e.g., `env.USER_KV.get()`).
+Once the API request is made, the Worker will be redeployed with the new bindings. The bindings will then become accessible from the Worker code using `env.BINDING_NAME` (e.g., `env.USER_KV.get()`).
 
 #### Using Wrangler
 
