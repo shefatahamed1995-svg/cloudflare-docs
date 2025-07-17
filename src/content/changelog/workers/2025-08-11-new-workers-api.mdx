@@ -1,0 +1,99 @@
+---
+title: Simpler Workers API that lets you directly manage Workers, Versions, and Deployments
+description: Simpler Workers API, SDK methods, and Terraform resources for directly managing Workers, Versions, and Deployments
+date: 2025-08-11
+---
+
+The current Workers script upload API is convenient for a one-shot Workers deploy. However, it unavoidably creates [Versions and Deployments](/workers/configuration/versions-and-deployments/), and sometimes you don't want that to happen. Sometimes, you want more (and simpler!) control over how and when these are created.
+
+In [Cloudflare Terraform Provider](https://registry.terraform.io/providers/cloudflare/cloudflare/5.9.0/docs) 5.9.0 and [cloudflare-typescript](https://github.com/cloudflare/cloudflare-typescript) 4.6.0 (TODO double check these versions), we're introducing a clean, separated API that makes Workers, Versions, and Deployments individual "capital R" resources with clear concerns. It's now possible to create a Worker entity–and reference it elsewhere–before uploading code, bindings, or making it routable from the internet. You'll also enjoy a more ergonomic way to upload modules, fewer total endpoints, and clearer [API docs](/api/resources/workers/). Check out [Infrastructure as Code (IaC)](/workers/platform/infrastructure-as-code) for detailed examples.
+
+## cloudflare-typescript example
+
+```javascript
+const scriptContent = `
+  export default {
+    async fetch(request, env, ctx) {
+      return new Response(env.MESSAGE, { status: 200 });
+    }
+  };
+`;
+
+/**
+ * Create a Worker and set non-versioned settings like observability
+ */
+const worker = await client.workers.create("my-worker", {
+  account_id: "...",
+  observability: {
+    enabled: true,
+  },
+});
+
+/**
+ * Create the first version of the Worker
+ * This is where code and bindings are defined and can be different between versions
+ */
+const version = await client.workers.versions.create(worker.id, {
+  account_id: "...",
+  main_module: "my-worker-script",
+  compatibility_date: $today,
+  bindings: [ /*...*/ ],
+  modules: [
+    {
+      name: "my-worker-script",
+      content_type: "application/javascript+module",
+      content_base64: Buffer.from(scriptContent).toString("base64"),
+    },
+  ],
+});
+
+/**
+ * Create a deployment and point all traffic to the version we created
+ */
+const deployment = await client.workers.scripts.deployments.create(worker.name, {
+  account_id: "...",
+  strategy: "percentage",
+  versions: [
+    {
+      percentage: 100,
+      version_id: version.id,
+    },
+  ],
+});
+```
+
+## Terraform
+
+In Terraform, you now have the option to just manage the Worker entity. You don't need to manage code, config, or deployments in your plan. This gives you flexibility to use Wrangler for build and deploy—in a different repo—while maintaining presence in your Terraform plan.
+
+```tf
+resource "cloudflare_worker" "my_worker" {
+  account_id = "..."
+  name = "my-important-service"
+}
+
+# Manage Versions and Deployments here or outside of Terraform
+# resource "cloudflare_workers_version" "my_worker_version" {}
+# resource "cloudflare_workers_deployment" "my_worker_deployment" {}
+```
+
+## A radically simpler API
+
+We wanted to make things easier, so we simplified these 6 APIs...
+- /workers/scripts/:script_name
+- /workers/scripts/:script_name/content
+- /workers/scripts/:script_name/script-settings
+- /workers/scripts/:script_name/settings
+- /workers/scripts/:script_name/subdomain
+- /workers/scripts/:script_name/secrets
+- /workers/scripts/:script_name/versions
+- /workers/scripts/:script_name/deployments
+
+Into just three!
+- /workers/:worker_id
+- /workers/:worker_id/versions
+- /workers/:worker_id/deployments
+
+It's not just less endpoints to learn. Can you guess which of the old APIs created a new Version and which didn't? That's no longer a mystery.
+
+For now, the new APIs are in beta and the old ones will remain operational. In the future, we plan to mark the old APIs as deprecated in our OpenAPI docs.
