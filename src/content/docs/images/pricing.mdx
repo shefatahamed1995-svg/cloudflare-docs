@@ -57,9 +57,37 @@ Unique transformations are counted over a 30-day sliding window. For example, if
 
 The `format` parameter counts as only 1 billable transformation, even if multiple copies of an image are served. In other words, if `width=100,format=auto/thumbnail.jpg` is served to some users as AVIF and to others as WebP, then this counts as 1 unique transformation instead of 2.
 
-#### Example
+#### Example: Image transformation pricing
 
-A retail website has 1,000 original product images that get served in 5 different sizes each month. This results in 5,000 unique transformations — or a cost of $2.50 per month.
+Suppose you have a retail website with 2,000 product images that get served in five different sizes each month. You store your images outside of Cloudflare Images on a non-Cloudflare platform. Your estimated cost for the month is as follows.
+
+2,000 images × 5 sizes = 10,000 transformations
+<br/>10,000 transformations - 5,000 transformations (included in plan) = 5,000 transformations
+<br/>(5,000 transformations ÷ 1,000 transformations) × $0.50 = $2.50
+<br/>$2.50 + the cost of your storage = your total monthly cost
+
+#### Example: Image transformation pricing with R2 storage
+
+If you do not want to store your images with Cloudflare Images, you can still [store them in Cloudflare with R2](/r2/). In that case, your total cost would be the cost of the image transformations + [the cost of R2 storage](/r2/pricing/#storage-usage).
+
+For example, suppose you have a retail website with 50,000 product images. Each image has a size of 5 MB and is served in five different sizes each month. You store your images outside of Cloudflare Images in [Cloudflare R2](/r2/). Your estimated cost for the month is as follows.
+
+50,000 images × 5 sizes = 250,000 transformations
+<br/>250,000 transformations - 5,000 transformations (included in plan) = 245,000 transformations
+<br/>(245,000 transformations ÷ 1,000 transformations) × $0.50 = $122.50
+
+50,000 images × 5 MB = 250,000 MB = 250 GB
+<br/>250 GB - 10 GB (included in plan) = 240 GB
+<br/>240 GB × $0.015 per gigabyte-month (GB-month) = $3.60
+
+$122.50 + $3.60 = $126.10
+
+Here are some additional examples of the cost of R2 storage:
+|Total size of your images							|	Storage cost with R2	|
+|---------------------------------------|---------------|
+|10 GB					 												|	$0.00					|
+|100 GB																	|	$1.35					|
+|1,000 GB																|	$14.85				|
 
 ### Images Stored
 
