@@ -96,18 +96,20 @@ You can find a full example [here] (cloudflare/agents/examples/email-agent)
 
 ### Automatic context wrapping for custom methods
 
-Defining custom methods on your agent is now even safer and cleaner. This means getCurrentAgent(), getCurrentRequest(), and getCurrentConnection() are now reliably accessible from anywhere in your agent — not just inside onRequest.
+Custom methods are now automatically wrapped with the agent's context, so calling `getCurrentAgent()` should work regardless of where in an agent's lifecycle it's called. Previously this would not work on RPC calls, but not just works out of the box. 
+
+
 
 ```ts
-export class MyAgent extends Agent<Env, State> {
+export class MyAgent extends Agent {
 	async suggestReply(ctx, { message }) {
-		// getCurrentAgent() now works!
+	  // getCurrentAgent() now correctly works, even when called inside an RPC method
+	  const { agent } = getCurrentAgent()!;
 		return generateText({
-			prompt: `Suggest a reply to: "${message}"`,
+			prompt: `Suggest a reply to: "${message}" from "${agent.name}"`,
 			tools: [replyWithEmoji],
 		});
 	}
 }
-```
 
 Try it out and tell us what you build!
