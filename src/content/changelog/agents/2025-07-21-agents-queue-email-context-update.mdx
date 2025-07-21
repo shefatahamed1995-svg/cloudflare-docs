@@ -12,7 +12,7 @@ The latest releases of [@cloudflare/agents] (https://github.com/cloudflare/agent
 
 ### Lightweight .queue for fast task deferral
 
-You can use .queue() to enqueue background work — ideal for tasks like processing user messages, sending notifications etc.
+You can use `.queue()` to enqueue background work — ideal for tasks like processing user messages, sending notifications etc.
 
 ```ts
 class MyAgent extends Agent {
@@ -30,9 +30,9 @@ class MyAgent extends Agent {
 
 Want to try it yourself? Just define a method like processMessage in your agent, and you’re ready to scale.
 
-### New email adaptor
+### New email adapter
 
-Want to build an AI agent that can receive and respond to emails automatically? With the new email adaptor and onEmail lifecycle method, now you can.
+Want to build an AI agent that can receive and respond to emails automatically? With the new email adapter and onEmail lifecycle method, now you can.
 
 ```ts
 export class EmailAgent extends Agent {
@@ -67,11 +67,11 @@ You can find a full example [here](https://github.com/cloudflare/agents/tree/mai
 
 ### Automatic context wrapping for custom methods
 
-Custom methods are now automatically wrapped with the agent's context, so calling `getCurrentAgent()` should work regardless of where in an agent's lifecycle it's called. Previously this would not work on RPC calls, but not just works out of the box.
+Custom methods are now automatically wrapped with the agent's context, so calling `getCurrentAgent()` should work regardless of where in an agent's lifecycle it's called. Previously this would not work on RPC calls, but now just works out of the box.
 
 ```ts
 export class MyAgent extends Agent {
-	async suggestReply(ctx, { message }) {
+	async suggestReply(message) {
 		// getCurrentAgent() now correctly works, even when called inside an RPC method
 		const { agent } = getCurrentAgent()!;
 		return generateText({
