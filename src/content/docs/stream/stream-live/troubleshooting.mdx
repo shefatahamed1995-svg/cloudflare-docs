@@ -42,11 +42,26 @@ If your live stream is buffering, freezing, experiencing latency issues, switchi
 	</Details>
 </Steps>
 
-## Error codes for live stream
+## Event error codes
 
+This guide can help you troubleshoot the following error codes received while live streaming videos:
+* `INPUT_CONNECTION_ERROR` — An error occurred while reading the input connection.
+* `STREAM_FAILED_TO_START` — An error occurred while starting the live stream.
+* `TIMEOUT_READING_FROM_INPUT` — Timeout waiting for packet, stream is stopping.
+* `UNEXPECTED_FRAME_TYPE` — Expected IDR keyframe but received a different frame type.
+* `INPUT_FORCE_DISCONNECTED` — Your live input was forcefully disconnected.
 
+For a full list of events, go to the [Cloudflare dashboard](https://dash.cloudflare.com) > **Stream** > **Logs**.
 
+If you subscribe to webhooks, instead see [webhook error codes for on demand videos](/stream/manage-video-library/using-webhooks/#error-codes) and [webhook error codes for live stream](/stream/stream-live/webhooks/#error-codes).
 
+If you receive any of the above error codes while live streaming videos:
+<Steps>
+1.
+2.
+3.
+</Steps>
+If you are still receiving error codes, [contact support](/support/contacting-cloudflare-support/).
 
 
 
