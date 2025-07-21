@@ -1,0 +1,142 @@
+---
+title: Agents SDK now supports task queues, email handling, and context-wrapped methods
+description: The latest release adds .queue(), email support, and automatic context for custom methods
+products:
+  - agents
+  - workers
+  - workflows
+date: 2025-07-21
+---
+
+The latest releases of [@cloudflare/agents] (https://github.com/cloudflare/agents) brings three powerful improvements that make building and scaling agents even easier. You now get:
+
+### Lightweight .queue for fast task deferral
+
+You can use .queue() to enqueue background work — ideal for tasks like processing user messages, sending notifications etc.
+Here's a full example using .queue() inside a tool, with batching and concurrency control:
+
+```ts
+const queueMessage = tool({
+	description: "Queue a message to be processed by the agent",
+	parameters: z.object({
+		message: z.string().describe("The message to process"),
+		priority: z
+			.enum(["low", "normal", "high"])
+			.default("normal")
+			.describe("Priority level for the message"),
+	}),
+	execute: async ({ message, priority = "normal" }) => {
+		const { agent } = getCurrentAgent<Chat>();
+
+		if (!agent) {
+			return "Error: Agent not available";
+		}
+
+		try {
+			// Create a batch of 100 messages
+			const batchNumbers = Array.from({ length: 100 }, (_, i) => i + 1);
+
+			const taskIds = await pMap(
+				batchNumbers,
+				async (i) => {
+					return agent.queue("processMessage", {
+						message: `${message} (batch ${i}/100)`,
+						priority,
+					});
+				},
+				{ concurrency: 6 }, // Run up to 6 queues in parallel
+			);
+
+			return `Queued 100 messages. Example Task IDs: ${taskIds.slice(0, 5).join(", ")}...`;
+		} catch (error) {
+			console.error("Error queueing message", error);
+			return `Error queueing message: ${error}`;
+		}
+	},
+});
+```
+
+Notes:
+
+- this uses pMap to handle concurrent queuing with a limit (concurrency: 6).
+- each .queue() call returns a task ID you can track.
+- works seamlessly thanks to automatic context wrapping
+
+Want to try it yourself? Just define a method like processMessage in your agent, and you’re ready to scale.
+
+### New email adaptor
+
+Want to build an AI agent that can receive and respond to emails automatically? With the new email adaptor and onEmail lifecycle method, now you can.
+
+```ts
+export class EmailAgent extends Agent<Env, EmailAgentState> {
+	initialState = {
+		emailCount: 0,
+		emails: [],
+		autoReplyEnabled: true,
+		lastUpdated: new Date(),
+	};
+
+	async onEmail(email: AgentEmail) {
+		const raw = await email.getRaw();
+		const parsed = await PostalMime.parse(raw);
+
+		this.setState({
+			...this.state,
+			emailCount: this.state.emailCount + 1,
+			emails: [
+				...this.state.emails.slice(-9),
+				{
+					from: parsed.from?.address ?? email.from,
+					subject: parsed.subject ?? "No Subject",
+					text: parsed.text,
+					html: parsed.html,
+					to: email.to,
+					timestamp: new Date(),
+					messageId: parsed.messageId,
+				},
+			],
+			lastUpdated: new Date(),
+		});
+
+		if (this.state.autoReplyEnabled && !this.isAutoReply(parsed)) {
+			await this.replyToEmail(email, {
+				fromName: "Email Agent",
+				body: `Thanks for your email! You've sent us "${parsed.subject}". We'll process it shortly.`,
+			});
+		}
+	}
+}
+```
+
+You route incoming mail like this:
+
+```ts
+export default {
+	async email(email, env) {
+		await routeAgentEmail(email, env, {
+			resolver: createAddressBasedEmailResolver("EmailAgent"),
+		});
+	},
+};
+```
+
+You can find a full example [here] (cloudflare/agents/examples/email-agent)
+
+### Automatic context wrapping for custom methods
+
+Defining custom methods on your agent is now even safer and cleaner. This means getCurrentAgent(), getCurrentRequest(), and getCurrentConnection() are now reliably accessible from anywhere in your agent — not just inside onRequest.
+
+```ts
+export class MyAgent extends Agent<Env, State> {
+	async suggestReply(ctx, { message }) {
+		// getCurrentAgent() now works!
+		return generateText({
+			prompt: `Suggest a reply to: "${message}"`,
+			tools: [replyWithEmoji],
+		});
+	}
+}
+```
+
+Try it out and tell us what you build!
