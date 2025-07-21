@@ -27,11 +27,6 @@ class MyAgent extends Agent{
   }
 }
 
-Notes:
-
-- this uses pMap to handle concurrent queuing with a limit (concurrency: 6).
-- each .queue() call returns a task ID you can track.
-- works seamlessly thanks to automatic context wrapping
 
 Want to try it yourself? Just define a method like processMessage in your agent, and you’re ready to scale.
 
