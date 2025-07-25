@@ -8,7 +8,7 @@ head:
     content: Bringing Your Own IPs to Cloudflare
 ---
 
-import { LinkButton, Plan, Description } from "~/components";
+import { Plan, Description, Feature } from "~/components";
 
 <Description>
 Get Cloudflare's security and performance while using your own IPs.
@@ -19,3 +19,15 @@ Get Cloudflare's security and performance while using your own IPs.
 With **Bringing Your Own IPs** (BYOIP), Cloudflare announces your IPs in all our locations. Use your IPs with [Magic Transit](/magic-transit/), [Spectrum](/spectrum/), [CDN services](/cache/), or [Gateway DNS](/cloudflare-one/policies/gateway/dns-policies/).
 
 Learn how to [get started](/byoip/get-started/).
+
+---
+
+## Features
+
+<Feature header="Service bindings" href="/byoip/service-bindings/">
+Control whether traffic destined for a given IP address is routed to Magic Transit, CDN, or Spectrum.
+</Feature>
+
+<Feature header="Address maps" href="/byoip/address-maps/">
+Specify which IP addresses should be mapped to DNS records when they are proxied through Cloudflare.
+</Feature>
