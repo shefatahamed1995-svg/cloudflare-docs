@@ -14,7 +14,7 @@ entries:
       * The default viewport size has been increased from 800x600 to 1920x1080. You can still override the viewport via request options. 
     title: Playwright now supported in local development
     description: |-
-    * Local development with `npx wrangler dev` now supports Playwright when using browser rendering. Upgrade to the latest version of wrangler to get started.
+      * Local development with `npx wrangler dev` now supports Playwright when using browser rendering. Upgrade to the latest version of wrangler to get started.
   - publish_date: "2025-07-25"
     title: "@cloudflare/puppeteer 1.0.4 released"
     description: |-
