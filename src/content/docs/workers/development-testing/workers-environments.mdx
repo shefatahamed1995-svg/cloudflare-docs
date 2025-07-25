@@ -1,0 +1,171 @@
+---
+title: Workers Environments
+pcx_content_type: concept
+sidebar:
+  order: 11
+---
+
+Workers Environments is a pattern that combines [Wrangler Environments](/workers/wrangler/environments/) and [Workers Build](/workers/ci-cd/builds/) to create a powerful deployment workflow for your git-connected Workers projects. By following this guide, you'll set up separate production and preview environments with isolated resources and a convenient preview URL that's automatically added to your PRs. This enables you to safely test changes before deploying to production.
+
+## Benefits
+
+When properly configured, Workers Environments provides:
+
+- Automatic PR preview deployments with a comment containing a preview URL
+- Isolated resources between environments (variables, bindings, databases, etc.)
+- A unified dashboard view that groups your environments under a single service
+- Clean versioning and deployment history for your production environment
+
+## Key concepts
+
+Before getting started, let's clarify some terminology:
+
+- **Production Worker** - Your main Worker that serves production traffic
+- **Preview Worker** - A separate Worker instance for testing changes before they reach production
+- **Feature branch** - Any branch that isn't your production branch (typically branches other than `main` or `production`)
+
+## Automatic setup
+
+[Deploy to Cloudflare](/workers/platform/deploy-buttons/) will guide you through a setup flow to connect to GitHub or GitLab and will set up a Production and Preview environment with the right build config by default. Check out [Workers Templates](https://github.com/cloudflare/templates) to get started now!
+
+## Setting up Workers Environments manually
+
+### 1. Configure your Workers project with environments
+
+Create or modify your `wrangler.json` file to include environment-specific configurations. Here's an example with different variables and D1 db instances for production and preview:
+
+```json
+{
+  "compatibility_date": "2025-04-01",
+  "main": "src/index.ts",
+  "name": "cool-service",
+  "env": {
+    "production": {
+      "route": "example.com",
+      "vars": {
+        "ENVIRONMENT": "production"
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_id": "a90fb4ab-a580-47ef-81e0-31f643ae14cb",
+          "database_name": "cool-service-db-production"
+        }
+      ]
+    },
+    "preview": {
+      "vars": {
+        "ENVIRONMENT": "preview"
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_id": "f8121f01-cbe8-48c3-c799-9a4cf94bde93",
+          "database_name": "cool-service-db-preview"
+        }
+      ]
+    }
+  }
+}
+```
+
+:::note
+
+We don't need to assign a route to the preview environment because the [branch preview url](/workers/configuration/previews/) will effectively be the same thing. A [workers.dev subdomain](/workers/configuration/routing/workers-dev/) is also available out-of-the-box. However, you could create another custom, stable route if you'd like.
+:::
+
+### 2. Deploy both environments
+
+Deploy both environments to create the Workers:
+
+```sh
+npx wrangler deploy --env production
+npx wrangler deploy --env preview
+```
+
+When Wrangler deploys with the `--env` flag, it creates Workers with names like `cool-service-production` and `cool-service-preview`. These will be grouped as a single service in the dashboard.
+
+### 3. Configure Workers Build for your Production Worker
+
+Now, set up CI/CD for your production environment:
+
+1. Navigate to your Worker in the Cloudflare dashboard
+2. Go to the **Build** tab
+3. Click **Git repository > Connect**
+4. Configure your build settings:
+
+   - **Branch**: `main` (or your production branch)
+   - **Build command**: `npm run build` (or your build command)
+   - **Deploy command**: `npx wrangler deploy --env production`
+   - **Enable non-production branch builds**: Unchecked
+   - **Build variables**: Add any variables needed for your production environment
+
+   TODO: Add screenshot of Production Worker build configuration
+
+### 4. Configure Workers Build for your Preview Worker
+
+Set up CI/CD for your preview environment:
+
+1. Navigate to your Worker in the Cloudflare dashboard
+2. Go to the **Build** tab
+3. Click **Git repository > Connect**
+4. Configure your build settings:
+
+   - **Branch**: `main` (or your production branch)
+   - **Build command**: `npm run build` (or your build command)
+   - **Deploy command**: `npx wrangler deploy --env preview`
+   - **Enable non-production branch builds**: Checked
+   - **Non-production branch deploy command**: `npx wrangler versions upload --env preview --preview-alias $WORKERS_CI_BRANCH`
+   - **Build variables**: Add any variables needed for your preview environment
+
+   TODO: Add screenshot of Preview Worker build configuration
+
+### 5. Test your setup
+
+1. Create a feature branch from your main branch
+2. Make changes and push them
+3. Create a pull request to your main branch
+
+You should see a comment on the PR with the title "Deploying with Cloudflare Workers" and a preview URL. This URL routes to your Preview Worker, which uses your preview variables, secrets, and resources.
+
+TODO: Add screenshot of PR comment with preview URL
+
+### 6. Deploy to production
+
+When you merge the PR, the Production Worker will build and deploy automatically. Since each environment is a separate Worker, your production deployment history remains clean and focused only on production changes.
+
+## Viewing your environments in the dashboard
+
+When you deploy Workers using Wrangler Environments, they appear as a single service in the Workers dashboard instead of separate `<worker-name>-<environment-name>` workers. Under the hood, this is driven by tags on the Workers: `service=<worker_name>` and `environment=<environment_name>` (TODO haven't settled on this yet).
+
+Inside this view, you'll find an environments dropdown that allows you to switch between different environments (which are separate Workers).
+
+TODO: Add screenshot of the Workers dashboard showing the environments dropdown
+
+## Debugging preview environments
+
+Since each environment is a standalone Worker, you can debug them individually, such as with Wrangler:
+
+```sh
+wrangler tail cool-service --env preview
+```
+
+It still has its own [Workers Observability](/workers/observability) and metrics in the dashboard, too.
+
+## Additional setups
+
+### Using Workers Environments without Wrangler
+
+If you're not using Wrangler, you can still implement Workers Environments by tagging your Workers in the API.
+
+TODO: Add details about API tagging for Workers Environments
+
+### Using Workers Environments without Workers Build
+
+If you prefer using other CI/CD tools like GitHub Actions instead of Workers Build, you can still implement Workers Environments.
+
+TODO
+
+### Migrating from Pages
+
+If you're currently using [Pages](/pages/) and want to migrate to Workers Environments: TODO
