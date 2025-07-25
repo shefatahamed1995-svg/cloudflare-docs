@@ -137,7 +137,7 @@ entries:
 
   - term: on-ramp
     general_definition: |-
-      a [connection method](/learning-paths/secure-internet-traffic/connect-devices-networks/choose-on-ramp/) from your private networks to Cloudflare.
+      a [connection method](/learning-paths/secure-internet-traffic/connect-devices-networks/choose-on-ramp/) from your networks to Cloudflare.
 
   - term: PAC file
     general_definition: |-
