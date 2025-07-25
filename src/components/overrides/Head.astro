@@ -130,10 +130,10 @@ if (
 if (frontmatter.pcx_content_type) {
 	["pcx_content_type", "algolia_content_type"].map((name) => {
 		const contentType = frontmatter.pcx_content_type
-		const updatedName = (contentType?.charAt(0).toUpperCase() + contentType?.slice(1))?.replace("-", " ")
+		const updatedName = contentType ? (contentType.charAt(0).toUpperCase() + contentType.slice(1)).replace("-", " ") : ""
 		metaTags.push({
 			name,
-			content: updatedName as string,
+			content: updatedName,
 		});
 	});
 }
