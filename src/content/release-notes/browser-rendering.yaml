@@ -9,9 +9,9 @@ entries:
     title: Page title now included in content endpoint responses
     description: |-
       * The [`/content` endpoint](/browser-rendering/rest-api/content-endpoint/) now returns the page's title, making it easier to identify pages. 
-    title: Default viewport updated to 1920×1080
+    title: Default viewport updated to 1920x1080
     description: |-
-      * The default viewport size has been increased from 800×600 to 1920×1080. You can still override the viewport via request options. 
+      * The default viewport size has been increased from 800x600 to 1920x1080. You can still override the viewport via request options. 
     title: Playwright now supported in local development
     description: |-
     * Local development with `npx wrangler dev` now supports Playwright when using browser rendering. Upgrade to the latest version of wrangler to get started.
