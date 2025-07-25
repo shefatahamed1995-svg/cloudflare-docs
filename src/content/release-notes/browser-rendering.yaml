@@ -5,6 +5,10 @@ productLink: "/browser-rendering/"
 productArea: Developer platform
 productAreaLink: /workers/platform/changelog/platform/
 entries:
+  - publish_date: "2025-07-28"
+    title: Page title now included in content endpoint responses
+    description: |-
+      * The [`/content` endpoint](/browser-rendering/rest-api/content-endpoint/) now returns the page's title, making it easier to identify pages. 
   - publish_date: "2025-07-25"
     title: "@cloudflare/puppeteer 1.0.4 released"
     description: |-
