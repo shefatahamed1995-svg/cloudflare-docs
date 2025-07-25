@@ -7,20 +7,29 @@ sidebar:
 head:
   - tag: title
     content: Overview
-description: AI Audit is a tool which allows you to analyze and control how third-party AI crawlers interact with your website.
+description: Monitor and control how AI services access your website content.
+
 ---
 
 import { Description, Feature, FeatureTable, Plan, LinkButton, RelatedProduct } from "~/components";
 
+<Plan type="all" />
+
 <Description>
 
-Analyze and control how third-party AI crawlers access and interact with your website.
+Monitor and control how AI services access your website content.
 
 </Description>
 
-<Plan type="all" />
+AI companies are increasingly using web content to train their models and power AI applications. AI Audit gives you visibility into which AI services are accessing your content, and provides tools to manage access according to your preferences.
 
-AI Audit helps manage AI crawlers on your website by providing visibility on which crawlers are accessing your pages, and allowing you to block unwanted crawlers.
+With AI Audit, you can:
+
+- **See which AI services access your content** - Monitor the dashboard to see crawler activity and request patterns
+- **Control access with granular policies** - Allow, block, or set custom rules for different AI services
+- **Monitor robots.txt compliance** - Track which crawlers follow your directives and create enforcement rules
+- **Explore monetization options** - Set up pay per crawl pricing for content access (private beta)
+- **Deploy with zero configuration** - Works automatically on all Cloudflare plans
 
 <LinkButton href="/ai-audit/get-started/">Get started </LinkButton>
 
@@ -74,4 +83,12 @@ Identify and mitigate automated traffic to protect your domain from bad bots.
 	product="waf"
 >
 Get automatic protection from vulnerabilities and the flexibility to create custom rules.
+</RelatedProduct>
+
+<RelatedProduct
+	header="Analytics"
+	href="/analytics/"
+	product="analytics"
+>
+View and analyze traffic on your domain.
 </RelatedProduct>
