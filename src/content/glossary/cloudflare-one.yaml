@@ -135,7 +135,7 @@ entries:
     general_definition: |-
       OpenID Connect (OIDC) is an identity authentication protocol built on top of OAuth 2.0. It is used verifying user identity and obtaining basic profile information.
 
-  - term: onramp
+  - term: on-ramp
     general_definition: |-
       a connection method, like Cloudflare Tunnel or WARP Connector, from your private networks to Cloudflare.
 
